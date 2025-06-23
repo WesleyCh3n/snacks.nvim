@@ -14,6 +14,31 @@ local function git_args(...)
   return ret
 end
 
+---@param opts snacks.picker.git.lstree.Config
+function M.lstree(opts, ctx)
+  local args = opts.args or {}
+  for _, str in ipairs({ "ls-tree", "-r", opts.branch, "--name-only" }) do
+    table.insert(args, str)
+  end
+  if not opts.cwd then
+    opts.cwd = Snacks.git.get_root() or uv.cwd() or "."
+    ctx.picker:set_cwd(opts.cwd)
+  end
+  local cwd = svim.fs.normalize(opts.cwd) or nil
+  return require("snacks.picker.source.proc").proc({
+    opts,
+    {
+      cmd = "git",
+      args = args,
+      ---@param item snacks.picker.finder.Item
+      transform = function(item)
+        item.cwd = cwd
+        item.file = item.text
+      end,
+    },
+  }, ctx)
+end
+
 ---@param opts snacks.picker.git.files.Config
 ---@type snacks.picker.finder
 function M.files(opts, ctx)
@@ -136,15 +161,15 @@ function M.log(opts, ctx)
         cwd = cwd,
         args = { "log", "-z", "--follow", "--name-status", "--pretty=format:''", "--diff-filter=R", "--", file },
       }, ctx)(function(item)
-        for _, text in ipairs(vim.split(item.text, "\0")) do
-          if text:find("^R%d%d%d$") then
-            is_rename = true
-          elseif is_rename then
-            is_rename = false
-            renames[#renames + 1] = text
-          end
-        end
-      end)
+            for _, text in ipairs(vim.split(item.text, "\0")) do
+              if text:find("^R%d%d%d$") then
+                is_rename = true
+              elseif is_rename then
+                is_rename = false
+                renames[#renames + 1] = text
+              end
+            end
+          end)
     end
 
     Proc.proc({
@@ -277,7 +302,7 @@ function M.branches(opts, ctx)
     --- e.g. "* (HEAD detached at f65a2c8) f65a2c8 chore(build): auto-generate docs"
     "^(.)%s(%b())%s+(" .. commit_pat .. ")%s*(.*)$",
     --- e.g. "  main                       d2b2b7b [origin/main: behind 276] chore(build): auto-generate docs"
-    "^(.)%s(%S+)%s+(".. commit_pat .. ")%s*(.*)$",
+    "^(.)%s(%S+)%s+(" .. commit_pat .. ")%s*(.*)$",
     -- stylua: ignore end
   } ---@type string[]
 

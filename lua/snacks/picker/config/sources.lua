@@ -239,6 +239,16 @@ M.git_branches = {
 }
 
 -- Find git files
+---@class snacks.picker.git.lstree.Config: snacks.picker.git.Config
+---@field branch? string select branch
+M.git_lstree = {
+  finder = "git_lstree",
+  show_empty = true,
+  format = "file",
+  branch = "main",
+}
+
+-- Find git files
 ---@class snacks.picker.git.files.Config: snacks.picker.git.Config
 ---@field untracked? boolean show untracked files
 ---@field submodules? boolean show submodule files
@@ -700,7 +710,7 @@ M.projects = {
   patterns = { ".git", "_darcs", ".hg", ".bzr", ".svn", "package.json", "Makefile" },
   recent = true,
   matcher = {
-    frecency = true, -- use frecency boosting
+    frecency = true,   -- use frecency boosting
     sort_empty = true, -- sort even when the filter is empty
     cwd_bonus = false,
   },
@@ -787,10 +797,10 @@ M.select = {
 ---@field filter? snacks.picker.filter.Config
 M.smart = {
   multi = { "buffers", "recent", "files" },
-  format = "file", -- use `file` format for all sources
+  format = "file",     -- use `file` format for all sources
   matcher = {
-    cwd_bonus = true, -- boost cwd matches
-    frecency = true, -- use frecency boosting
+    cwd_bonus = true,  -- boost cwd matches
+    frecency = true,   -- use frecency boosting
     sort_empty = true, -- sort even when the filter is empty
   },
   transform = "unique_file",
