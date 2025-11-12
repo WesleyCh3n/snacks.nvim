@@ -39,7 +39,7 @@ function M.lstree(opts, ctx)
     ctx.picker:set_cwd(opts.cwd)
   end
   local cwd = svim.fs.normalize(opts.cwd) or nil
-  return require("snacks.picker.source.proc").proc({
+  return require("snacks.picker.source.proc").proc(
     ctx:opts({
       cmd = "git",
       args = args,
@@ -49,7 +49,8 @@ function M.lstree(opts, ctx)
         item.file = item.text
       end,
     }),
-  }, ctx)
+    ctx
+  )
 end
 
 ---@param opts snacks.picker.git.files.Config
