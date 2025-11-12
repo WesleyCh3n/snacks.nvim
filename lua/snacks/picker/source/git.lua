@@ -32,26 +32,23 @@ end
 
 ---@param opts snacks.picker.git.lstree.Config
 function M.lstree(opts, ctx)
-  local args = opts.args or {}
-  for _, str in ipairs({ "ls-tree", "-r", opts.branch, "--name-only" }) do
-    table.insert(args, str)
-  end
+  local args = M.git("ls-tree", "-r", opts.branch, "--name-only")
   if not opts.cwd then
-    opts.cwd = Snacks.git.get_root() or uv.cwd() or "."
+    opts.cwd = ctx:git_root() or uv.cwd() or "."
     ctx.picker:set_cwd(opts.cwd)
   end
   local cwd = svim.fs.normalize(opts.cwd) or nil
   return require("snacks.picker.source.proc").proc({
-    opts,
-    {
-      cmd = "git",
-      args = args,
-      ---@param item snacks.picker.finder.Item
-      transform = function(item)
-        item.cwd = cwd
-        item.file = item.text
-      end,
-    },
+    ctx:opts(
+      {
+        cmd = "git",
+        args = args,
+        ---@param item snacks.picker.finder.Item
+        transform = function(item)
+          item.cwd = cwd
+          item.file = item.text
+        end,
+      }),
   }, ctx)
 end
 
